@@ -1,4 +1,4 @@
-package numbermaster.model;
+package org.yoshi.numbermaster.model;
 
 import java.time.LocalDateTime;
 public record MersennePrimeRecord  (

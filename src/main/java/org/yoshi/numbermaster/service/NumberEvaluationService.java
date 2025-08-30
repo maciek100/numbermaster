@@ -1,8 +1,8 @@
-package numbermaster.service;
+package org.yoshi.numbermaster.service;
 
-import numbermaster.dto.NumberRequest;
-import numbermaster.dto.NumberResponse;
-import numbermaster.model.MersennePrimeRecord;
+import org.yoshi.dto.PrimeCheckRequest;
+import org.yoshi.dto.PrimeCheckResponse;
+import org.yoshi.numbermaster.model.MersennePrimeRecord;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -19,17 +19,20 @@ public class NumberEvaluationService {
     // In-memory storage for Mersenne primes (in production, use a database)
     private final Map<Long, MersennePrimeRecord> storedMersennePrimes = new ConcurrentHashMap<>();
 
+    private long counter = 0L;
+
     // Known Mersenne primes for verification (2^p - 1 where p is prime)
     private static final Set<Integer> KNOWN_MERSENNE_PRIMES = Set.of(
             3, 7, 31, 127, 8191, 131071, 524287, 2147483647
     );
 
-    public NumberResponse evaluateNumber(NumberRequest request) {
+    public PrimeCheckResponse evaluateNumber(PrimeCheckRequest request) {
         long number = request.number();
         long requestId = request.requestId();
-
+        counter++;
         logger.info("Evaluating number: {} (requestId: {})", number, requestId);
-
+        Optional<PrimeCheckResponse> optResponse = checkSmallIntegers(number, requestId);
+        if (optResponse.isPresent()) return optResponse.get();
         boolean isPrime = isPrime(number);
         boolean isMersenne = false;
         String message;
@@ -58,7 +61,7 @@ public class NumberEvaluationService {
             message = String.format("Composite number: %d", number);
         }
 
-        return new NumberResponse(number, requestId, isPrime, isMersenne, message);
+        return new PrimeCheckResponse(number, requestId, isPrime, isMersenne, message);
     }
 
     private boolean isPrime(long n) {
@@ -98,5 +101,16 @@ public class NumberEvaluationService {
 
     public Collection<MersennePrimeRecord> getStoredMersennePrimes() {
         return new ArrayList<>(storedMersennePrimes.values());
+    }
+
+    private Optional<PrimeCheckResponse> checkSmallIntegers ( long number, long requestId) {
+        if ( number < 2)
+            return Optional.of(new PrimeCheckResponse(number, requestId, false, false,
+                    "This number is clasified as neither prime nor composite"));
+        return Optional.empty();
+    }
+
+    public long getCounter () {
+        return counter;
     }
 }
