@@ -8,8 +8,8 @@ import org.springframework.web.socket.CloseStatus;
 import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
 import org.springframework.web.socket.handler.TextWebSocketHandler;
-import org.yoshi.dto.PrimeCheckRequest;
-import org.yoshi.dto.PrimeCheckResponse;
+import org.yoshi.dto.NumberCheckRequest;
+import org.yoshi.numbermaster.model.NumberAnalysis;
 import org.yoshi.numbermaster.service.NumberEvaluationService;
 
 @Component
@@ -26,9 +26,9 @@ public class NumberEvaluationHandler extends TextWebSocketHandler {
     @Override
     protected void handleTextMessage(WebSocketSession wsSession, TextMessage message) throws Exception {
         try {
-            PrimeCheckRequest primeRequest = objectMapper.readValue(message.getPayload(), PrimeCheckRequest.class);
-            PrimeCheckResponse primeResponse = numberEvaluationService.evaluateNumber(primeRequest);
-            String jsonResponse = objectMapper.writeValueAsString(primeResponse);
+            NumberCheckRequest primeRequest = objectMapper.readValue(message.getPayload(), NumberCheckRequest.class);
+            NumberAnalysis numberAnalysis = numberEvaluationService.evaluateNumber(primeRequest);
+            String jsonResponse = objectMapper.writeValueAsString(numberAnalysis);
             wsSession.sendMessage(new TextMessage(jsonResponse));
         } catch (Exception e) {
             logger.error("WS exception while handling a message {} : {}", message.getPayload(), e.getMessage());
